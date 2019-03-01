@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="baiduTemplate.js"></script>
+</head>
+<body>
+<!--这里调用advByType这个接口-->
+    <div id="lbt">
+        //轮播图
+    </div>
+<!--这里写一个模板-->
+<script id="tp" type="text/html">
+    //轮播图模板
+    <div>
+        <>
+        轮播图模板
+    </div>
+</script>
+</body>
+<script>
+    //获取广告信息
+   /* init();
+    //轮播图
+    function init() {
+        //这是轮播图的
+        getAdvList(1,5,function (obj) {
+            document.querySelector("#lbt").innerHTML=baidu.template("tp",obj)
+        });
+        getAdvList(2,4,function (obj) {
+            document.querySelector("#lbt").innerHTML=baidu.template("tp",obj)
+        });
+    }
+
+    function getAdvList(advType,limit,cb) {
+        var xhr=new XMLHttpRequest();
+        xhr.open("get","/advByType?advType="+advType+"&limit="+limit);
+        xhr.send();
+        xhr.onload=function (ev) {
+            var obj=JSON.parse(xhr.responseText);
+            cb(obj);
+        }
+    }
+*/
+    ajax({
+        url:"/advByType",
+        data:{
+            advType:1,
+            limit:5
+        },
+        success(obj){
+            console.log(11111111111,obj);
+        },
+        error(err){
+
+        }
+    });
+    function ajax(obj) {
+        var url =obj.url+"?";
+        var arr =[];
+        for(var i in obj.data){
+            arr.push(i+"="+obj.data[i]);
+        }
+        url+=arr.join("&");
+        var xhr = new XMLHttpRequest();
+        xhr.open("get",url);
+        xhr.send();
+        xhr.onload = function (ev) {
+            var result = JSON.parse(xhr.responseText);
+            console.log(result);
+            if(result.ok === 1){
+                obj.success(result);
+            }else{
+                obj.error({})
+            }
+        }
+    }
+
+</script>
+</html>

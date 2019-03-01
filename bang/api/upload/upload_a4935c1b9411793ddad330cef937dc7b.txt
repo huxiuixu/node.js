@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="node_modules/jQuery/tmp/jquery.js" type="text/javascript"></script>
+</head>
+<body>
+编号：<input type="text" name="bookNo"><br>
+书名：<input type="text" name="bookName"><br>
+作者：<input type="text"  name="author"><br>
+出版社：<input type="text"  name="press"><br>
+<input type="button" value="添加" id="bn">
+
+查找：<input type="text" id="search">
+    <input type="button" value="查找" id="searchBn">
+    <input type="button" value="清除" id="clear">
+
+<script>
+    /*
+        *
+        * 1、当点击添加按钮时，获取表单的数据，并且存入arr
+        * 2、根据数组创建表格
+        * 3、根据search文本的内容在数组中模糊查找数据，查找到的数据存入新数组，
+        *   并且通过这个新数组创建表格
+        *  4、清除新数组创建的表格，重新根据原数组创建表格
+        *
+        * */
+    var arr=[];
+    var buttons=[];
+    var table=$("<table></table>").css("borderCollapse","collapse").width(800).appendTo("body");
+    $("#bn").on("click",function (e) {
+        var obj={};
+        var bool=false;
+    $(":text:not(#search)").each(function(index,item){
+        var str=$(item).attr("name");
+        if($(item).val().trim().length===0){
+            bool=true;
+        }
+        obj[str]=$(item).val();//val是值，输入的内容
+        //item是当前项的dom元素的input
+        //这里就是那个数据，即所有的文本，根据这个文本的value来生成对象
+
+    });
+    if(bool){
+        alert("输入内容有误");
+        return;
+    }
+    obj.deleted=false;
+    arr.push(obj);
+    createTable(arr);
+    });
+    $("#searchBn").on("click",function (e) {
+        var list=[];
+        $.each(arr,function (index,item) {
+           if (item.bookName.indexOf($("#search").val())>-1){
+        list.push(item);
+           }
+            
+        });
+    createTable(list);
+    });
+    $("#clear").on("click",function (e) {
+        bnDispose();
+        table.empty();
+        arr=[];
+        });
+    //清除元素执行bndispose
+function bnDispose() {
+    for(var i=0;i<buttons.length;i++){
+        //bnDispose是删除事件click，然后清空设为null
+        buttons[i].off("click");//js中用off将所有的click事件清空
+        buttons[i]=null;
+    }
+    buttons.length=0;
+}
+    function createTable(arr) {
+        bnDispose();
+        table.empty();
+        if(!arr||arr.length===0) return;
+        var style={
+            height:"30px",
+            lineHeight:"30px",
+            textAlign:"center",
+          border:"1px solid #f00"
+        };
+        //创建表头，遍历
+        var thr=$("<tr></tr>").appendTo(table);
+
+        $.each(arr[0],function (prop,value) {
+            $("<th></th>").text(prop).appendTo(thr).css(style);
+        });
+        $.each(arr,function (index,item) {
+            var tr=$("<tr></tr>").appendTo(table);
+            $.each(item,function (prop,value) {
+               var td= $("<td></td>").text(value).css(style).appendTo(tr);
+                if(prop==="deleted"){
+       var bn= $("<button>删除</button>").appendTo(td).on("click",function (e) {
+           var tr= $(this).parent().parent()[0];
+           var trs=Array.from($("tr"));
+           var index=trs.indexOf(tr);
+           arr.splice(index-1,1);
+           createTable(arr);
+            });
+                    buttons.push(bn);
+                }else{
+                  td.text(value);
+                }
+            })
+        })
+    }
+
+
+</script>
+</body>
+</html>

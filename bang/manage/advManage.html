@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        table{
+            width:100%;
+            border-collapse:collapse;
+        }
+        table td{
+            border:1px solid green;
+            text-align:center;
+        }
+    </style>
+    <script src="baiduTemplate.js"></script>
+</head>
+<body>
+    <div>
+        <form action="" name="myAdv" id="advForm">
+            <input type="text" hidden name="id">
+            <p>广告标题： <input type="text" name="advName"></p>
+            <p>广告链接： <input type="text" name="advHref"></p>
+            <p>广告排序： <input type="text" name="orderBy"></p>
+            <p>广告类别：
+                <select name="advType" id="">
+                    <option value="1">轮播图</option>
+                    <option value="2">轮播图底部广告</option>
+                    <option value="3">热门手机回收</option>
+                    <option value="4">优选精品</option>
+                </select>
+            </p>
+            <p>
+                广告图片：
+                        <input type="file" name="advPic" onchange="changeImg(this)">
+                        <img src="" alt="" id="myPic" width="200">
+            </p>
+            <p><input type="button" value="提交" name="btn"></p>
+        </form>
+    </div>
+    <div id="search">
+        <input type="text" onkeyup="getAdvList()">
+        <input type="button" value="全部">
+        <input type="button" value="轮播图">
+        <input type="button" value="轮播图底部广告">
+        <input type="button" value="热门手机回收">
+        <input type="button" value="优品精选">
+        <select name="" onchange="getAdvList()">
+            <option value="0">默认</option>
+            <option value="1">类别正序</option>
+            <option value="2">类别倒序</option>
+        </select>
+    </div>
+    <!--把百度模板放在这里-->
+    <div id="myApp"></div>
+<!--下面增加百度模板-->
+<script type="text/html" id="tp">
+    <table>
+        <tr>
+            <td>ID</td>
+            <td>广告标题</td>
+            <td>广告链接</td>
+            <td>广告类型</td>
+            <td>广告图片</td>
+            <td>广告排序</td>
+            <td>添加时间</td>
+            <td>操作</td>
+        </tr>
+        <%for(var i=0;i<advList.length;i++){%>
+            <tr>
+                <td><%=advList[i]._id%></td>
+                <td><%=advList[i].advName%></td>
+                <td><%=advList[i].advHref%></td>
+                <td><%=advTypeEnum[advList[i].advType]%></td>
+                <td><img width="100" src="<%=advList[i].advPic%>" alt=""></td>
+                <td><%=advList[i].orderBy%></td>
+                <td><%=advList[i].addTime%></td>
+                <td><a href="javascript:;" onclick="advInfoById('<%=advList[i]._id%>')">修改</a>
+                    <a href="javascript:;" onclick="deleteAdvById('<%=advList[i]._id%>')">删除</a>
+                </td>
+            </tr>
+        <%}%>
+    </table>
+</script>
+</body>
+<script>
+    var btn=document.querySelector("input[name=btn]");
+    var myPic=document.querySelector("#myPic");
+    var advForm=document.querySelector("#advForm");
+    var search=document.getElementById("search");
+    var advTypeBtn=document.querySelectorAll("#search input[type=button]");
+    //console.log(advTypeBtn);
+    var index=0;//切换全局的默认值
+    getAdvList();//调用getAdvList这个函数写在这里
+    tag();
+    btn.onclick=function () {
+        var formdata=new FormData(advForm);
+        var xhr=new XMLHttpRequest();
+        if(btn.value==="修改")
+            xhr.open("post","/adv/"+document.myAdv.id.value);
+        //document.myAdv即是advForm
+         else
+            xhr.open("post","/adv");
+        xhr.send(formdata);
+        xhr.onload = function (ev) {
+            console.log(xhr.responseText);
+            advForm.reset();
+            getAdvList();
+            btn.value==="提交";
+        }
+/*        if(btn.value==="修改"){
+            var formdata=new FormData(advForm);
+            var xhr=new XMLHttpRequest();
+            xhr.open("post","/adv/"+document.myAdv.id.value);
+            xhr.send(formdata);
+            xhr.onload=function () {
+                advForm.reset();
+                btn.value==="提交";
+                getAdvList();
+            }
+        } else{
+            //Formdata
+            var formdata = new FormData(document.querySelector("#advForm"));
+            var xhr = new XMLHttpRequest();
+            xhr.open("post","/adv");
+            xhr.send(formdata);
+            xhr.onload = function (ev) {
+                console.log(xhr.responseText);
+                advForm.reset();
+                getAdvList();
+            }
+
+        }*/
+
+       /* formdata.append("userName","laoliu");
+        formdata.append("userName","xiu");
+        formdata.set("userName","xiu");
+        console.log(formdata.get("userName"));//laoliu
+        获得所有数据返回的值为数组
+        console.log(formdata.getAll("userName"));//["laoliu", "xiu"]
+        console.log(formdata.get("userName"));//xiu*/
+    };
+    //封装起来写一个方法
+    function tag() {
+        //切换
+        advTypeBtn[index].style.background="red";
+        for(var i=0;i<advTypeBtn.length;i++){//外面这个i的作用域是全局的
+            advTypeBtn[i].onclick=(function (i) {//闭包//里面这个i的作用域是作用在里面这个函数中
+                return function () {
+                    advTypeBtn[index].style.background=null;
+                    index=i;
+                    advTypeBtn[i].style.background="red";
+                    getAdvList();
+                   // console.log(i);
+                }
+                //console.log(i);//1,2,3,4,5
+            })(i);//执行匿名函数
+        }
+    }
+
+//实现切换功能的另一种方法
+    /*for(var i=0;i<advTypeBtn.length;i++){
+        advTypeBtn[i].index=i;
+        advTypeBtn[i].onclick=function () {
+            console.log(this.index);
+            //console.log(i);//5
+        }
+    }*/
+    //console.log(i);
+    //根据ID获取广告信息
+    function advInfoById(id) {
+        var xhr=new XMLHttpRequest();
+        xhr.open("get","/advInfoById?id="+id);
+        xhr.send();
+        xhr.onload=function () {
+            var obj=JSON.parse(xhr.responseText);
+            document.myAdv.advName.value=obj.advInfo.advName;
+            document.myAdv.advHref.value=obj.advInfo.advHref;
+            document.myAdv.advType.value=obj.advInfo.advType;
+            document.myAdv.id.value=obj.advInfo._id;
+            document.myAdv.orderBy.value=obj.advInfo.orderBy;
+            myPic.src=obj.advInfo.advPic;
+            btn.value="修改";
+        }
+    }
+    //图片预览
+    function changeImg(_this) {
+        var reader=new FileReader();
+        reader.readAsDataURL(_this.files[0]);
+        reader.onload=function (e) {
+            myPic.src=e.target.result;
+            console.log(e.target.result);
+        }
+    }
+    //删除
+    function deleteAdvById(id) {
+        var xhr=new XMLHttpRequest();
+        xhr.open("delete","/adv/"+id);
+        xhr.send();
+        xhr.onload=function (ev) {
+            getAdvList();
+        }
+    }
+    //渲染（显示内容，广告列表）
+    function getAdvList() {
+        var xhr=new XMLHttpRequest();
+        xhr.open("get","/adv?advType="+index
+            +"&order="+search.querySelector("select").value
+            +"&keyWord="+search.querySelector("input[type=text]").value);
+        xhr.send();
+        xhr.onload=function (ev) {
+            //这里面得到数据百度模板渲染出来
+            var obj=JSON.parse(xhr.responseText);//把从后端服务器拿过来的数据转化为对象
+            document.querySelector("#myApp").innerHTML=baidu.template("tp",obj);
+        }
+    }
+    
+</script>
+</html>
